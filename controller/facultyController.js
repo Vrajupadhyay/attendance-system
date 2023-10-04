@@ -32,7 +32,7 @@ exports.loginFaculty = (req, res) => {
   
     // Proceed with inserting data into the database
     const selectQuery = 'SELECT * FROM faculty WHERE username = ? AND password = ?';
-    db.query(selectQuery, [username, password], (err, result) => {
+    db.execute(selectQuery, [username, password], (err, result) => {
       if (err) {
         console.error('Error fetching data:', err);
         return res.status(500).json({ error: 'Internal Server Error' });
