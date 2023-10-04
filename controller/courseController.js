@@ -67,7 +67,7 @@ exports.createCourse = (req, res) => {
 exports.viewCourse = (req, res) => {
   const { username } = req.params;
   const query = "SELECT * FROM courses WHERE username = ?";
-  db.execute(query, [username], (err, result) => {
+  db.query(query, [username], (err, result) => {
     if (err) {
       console.error("Error viewing course:", err);
       return res.status(500).json({ error: "Internal Server Error" });
