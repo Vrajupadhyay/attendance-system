@@ -57,3 +57,17 @@ exports.getFacultyById = (req, res) => {
     }
   });
 }
+
+//update password
+exports.updatePassword = (req, res) => {
+  const { id, password } = req.body;
+  const query = "UPDATE faculty SET password = ? WHERE fid = ?";
+  db.query(query, [password, id], (err, results) => {
+    if (err) {
+      console.error("Error updating password:", err);
+      res.status(500).json({ error: "Internal Server Error" });
+    } else {
+      res.json(results);
+    }
+  });
+}

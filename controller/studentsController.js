@@ -25,7 +25,6 @@ exports.createStudent = (req, res) => {
     uid,
     fullname,
     department,
-    gender,
     contact_number,
     emailid,
     current_sem,
@@ -34,7 +33,7 @@ exports.createStudent = (req, res) => {
   } = req.body;
   // console.log(req.body);
   const query =
-    "INSERT INTO students (uid, fullname, department, gender, contact_number, emailid, current_sem, course_id, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO students (uid, fullname, department, contact_number, emailid, current_sem, course_id, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   db.query(
     query,
@@ -42,7 +41,6 @@ exports.createStudent = (req, res) => {
       uid,
       fullname,
       department,
-      gender,
       contact_number,
       emailid,
       current_sem,
@@ -190,26 +188,25 @@ exports.ImportStudentExcel = async (req, res) => {
       const uid = row.getCell(1).value?.toString() ?? "";
       const fullname = row.getCell(2).value?.toString() ?? "";
       const department = row.getCell(3).value?.toString() ?? "";
-      const gender = row.getCell(4).value?.toString() ?? "";
-      const contactNumber = row.getCell(5).value?.toString() ?? "";
+      // const gender = row.getCell(4).value?.toString() ?? "";
+      const contactNumber = row.getCell(4).value?.toString() ?? "";
        // Check the cell value for non-string types and convert to a string
-       const emailCell = row.getCell(6);
+       const emailCell = row.getCell(5);
        const emailid = emailCell.text || '';
 
-      const currentSem = row.getCell(7).value?.toString() ?? "";
+      const currentSem = row.getCell(6).value?.toString() ?? "";
       // console.log(row.getCell(6).value?.toString());
       // console.log(emailid);
       // Insert the student data into the database (replace 'students' with your actual table name)
       const query = `
-        INSERT INTO students (uid, fullname, department, gender, contact_number, emailid, current_sem, course_id, username)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO students (uid, fullname, department, contact_number, emailid, current_sem, course_id, username)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       await connection.execute(query, [
         uid,
         fullname,
         department,
-        gender,
         contactNumber,
         emailid,
         currentSem,

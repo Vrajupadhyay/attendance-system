@@ -4,11 +4,11 @@ const mysql = require('mysql2');
 
 // Database configuration
 const db = mysql.createConnection({
-  host: 'localhost',
-  port: 3308, // If 3308 is the correct port    
-  user: 'root',
-  password: '',
-  database: 'attendence_system',
+  host: process.env.HOST,
+  port: process.env.DB_PORT, // If 3308 is the correct port    
+  user: process.env.USER,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE,
 });
 
 // Connect to the database

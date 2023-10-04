@@ -1,6 +1,8 @@
 // app.js
 
 const express = require('express');
+const dotenv = require('dotenv');
+dotenv.config({ path: './.env' });
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
@@ -12,7 +14,7 @@ app.use(bodyParser.json());
 app.use(express.json()); // Add this line to parse JSON request bodies
 
 // Import the database configuration
-const db = require('./db');
+require('./db');
 
 // Import controllers
 const studentsController = require('./controller/studentsController');
@@ -49,6 +51,7 @@ app.get('/extra-attendance/:date/:course_id/:username', extraAttendanceControlle
 app.post('/faculty', facultyController.registerFaculty);
 app.post('/login', facultyController.loginFaculty);
 app.get('/faculty/:username/:password', facultyController.getFacultyById);
+app.put('/faculty/update-password', facultyController.updatePassword);
 
 app.post('/courses', courseController.createCourse);
 app.get('/courses/:username', courseController.viewCourse);
