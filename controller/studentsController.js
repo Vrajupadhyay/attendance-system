@@ -332,23 +332,21 @@ exports.ImportStudentExcel = async (req, res) => {
       const uid = row.getCell(1).value?.toString() ?? "";
       const fullname = row.getCell(2).value?.toString() ?? "";
       const department = row.getCell(3).value?.toString() ?? "";
-      const contactNumber = row.getCell(4).value?.toString() ?? "";
-      const emailCell = row.getCell(5);
-      const emailid = emailCell.text || '';
-      const currentSem = row.getCell(6).value?.toString() ?? "";
+      // const contactNumber = row.getCell(4).value?.toString() ?? "";
+      // const emailCell = row.getCell(5);
+      // const emailid = emailCell.text || '';
+      const currentSem = row.getCell(4).value?.toString() ?? "";
 
       // Insert the student data into the database (replace 'students' with your actual table name)
       const query = `
-        INSERT INTO students (uid, fullname, department, contact_number, emailid, current_sem, course_id, username)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO students (uid, fullname, department, current_sem, course_id, username)
+        VALUES (?, ?, ?, ?, ?, ?)
       `;
 
       await connection.execute(query, [
         uid,
         fullname,
         department,
-        contactNumber,
-        emailid,
         currentSem,
         courseId,
         username,
