@@ -234,21 +234,83 @@ exports.deleteStudent = async (req, res) => {
 // };
 
 // const ExcelJS = require('exceljs');
-const mysql = require("mysql2/promise");
+// const mysql = require("mysql2/promise");
 
-// Database configuration
-const dbConfig = {
-  host: process.env.HOST,
-  port: process.env.DB_PORT,
-  user: process.env.USER,
-  password: process.env.PASSWORD,
-  database: process.env.DATABASE,
-};
+// // Database configuration
+// const dbConfig = {
+//   host: process.env.HOST,
+//   port: process.env.DB_PORT,
+//   user: process.env.USER,
+//   password: process.env.PASSWORD,
+//   database: process.env.DATABASE,
+// };
 
+// exports.ImportStudentExcel = async (req, res) => {
+//   try {
+//     // Extract the 'courseId' and 'username' from the request body
+//     const { courseId, username, filepath } = req.body;
+
+//     if (!courseId || !username) {
+//       return res.status(400).send("Invalid request data."); // Handle missing data
+//     }
+
+//     // Load the Excel file
+//     const workbook = new ExcelJS.Workbook();
+//     await workbook.xlsx.readFile(filepath); // Replace with the actual file path
+
+//     // Assuming the data is in the first worksheet
+//     const worksheet = workbook.getWorksheet(1);
+
+//     // Create a database connection
+//     const connection = await mysql.createConnection(dbConfig);
+
+//     // Iterate through rows and insert data into the database
+//     for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+//       const row = worksheet.getRow(rowNumber);
+//       const uid = row.getCell(1).value?.toString() ?? "";
+//       const fullname = row.getCell(2).value?.toString() ?? "";
+//       const department = row.getCell(3).value?.toString() ?? "";
+//       // const gender = row.getCell(4).value?.toString() ?? "";
+//       const contactNumber = row.getCell(4).value?.toString() ?? "";
+//        // Check the cell value for non-string types and convert to a string
+//        const emailCell = row.getCell(5);
+//        const emailid = emailCell.text || '';
+
+//       const currentSem = row.getCell(6).value?.toString() ?? "";
+//       // console.log(row.getCell(6).value?.toString());
+//       // console.log(emailid);
+//       // Insert the student data into the database (replace 'students' with your actual table name)
+//       const query = `
+//         INSERT INTO students (uid, fullname, department, contact_number, emailid, current_sem, course_id, username)
+//         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+//       `;
+
+//       await connection.execute(query, [
+//         uid,
+//         fullname,
+//         department,
+//         contactNumber,
+//         emailid,
+//         currentSem,
+//         courseId,
+//         username,
+//       ]);
+//     }
+
+//     // Close the database connection
+//     await connection.end();
+
+//     res.status(200).send("Students uploaded from Excel file successfully.");
+//   } catch (error) {
+//     console.error("Error uploading students from Excel:", error);
+//     res.status(500).send("Internal Server Error");
+//   }
+// };
 exports.ImportStudentExcel = async (req, res) => {
   try {
     // Extract the 'courseId' and 'username' from the request body
     const { courseId, username, filepath } = req.body;
+    // console.log(req.body);
 
     if (!courseId || !username) {
       return res.status(400).send("Invalid request data."); // Handle missing data
@@ -262,7 +324,7 @@ exports.ImportStudentExcel = async (req, res) => {
     const worksheet = workbook.getWorksheet(1);
 
     // Create a database connection
-    const connection = await mysql.createConnection(dbConfig);
+    const connection = await db.getConnection();
 
     // Iterate through rows and insert data into the database
     for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
@@ -270,15 +332,11 @@ exports.ImportStudentExcel = async (req, res) => {
       const uid = row.getCell(1).value?.toString() ?? "";
       const fullname = row.getCell(2).value?.toString() ?? "";
       const department = row.getCell(3).value?.toString() ?? "";
-      // const gender = row.getCell(4).value?.toString() ?? "";
       const contactNumber = row.getCell(4).value?.toString() ?? "";
-       // Check the cell value for non-string types and convert to a string
-       const emailCell = row.getCell(5);
-       const emailid = emailCell.text || '';
-
+      const emailCell = row.getCell(5);
+      const emailid = emailCell.text || '';
       const currentSem = row.getCell(6).value?.toString() ?? "";
-      // console.log(row.getCell(6).value?.toString());
-      // console.log(emailid);
+
       // Insert the student data into the database (replace 'students' with your actual table name)
       const query = `
         INSERT INTO students (uid, fullname, department, contact_number, emailid, current_sem, course_id, username)
@@ -297,8 +355,8 @@ exports.ImportStudentExcel = async (req, res) => {
       ]);
     }
 
-    // Close the database connection
-    await connection.end();
+    // Release the database connection
+    connection.release();
 
     res.status(200).send("Students uploaded from Excel file successfully.");
   } catch (error) {
