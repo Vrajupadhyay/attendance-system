@@ -7,37 +7,118 @@ const fileUpload = require("express-fileupload");
 // const mysql = require("mysql2");
 
 // Controller functions
-exports.getAllStudents = (req, res) => {
-  const query = "SELECT * FROM students";
 
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching students:", err);
-      res.status(500).json({ error: "Internal Server Error" });
-    } else {
-      res.json(results);
-    }
-  });
+// exports.getAllStudents = (req, res) => {
+//   const query = "SELECT * FROM students";
+
+//   db.query(query, (err, results) => {
+//     if (err) {
+//       console.error("Error fetching students:", err);
+//       res.status(500).json({ error: "Internal Server Error" });
+//     } else {
+//       res.json(results);
+//     }
+//   });
+// };
+
+// exports.createStudent = (req, res) => {
+//   const {
+//     uid,
+//     fullname,
+//     department,
+//     contact_number,
+//     emailid,
+//     current_sem,
+//     course_id,
+//     username,
+//   } = req.body;
+//   // console.log(req.body);
+//   const query =
+//     "INSERT INTO students (uid, fullname, department, contact_number, emailid, current_sem, course_id, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+//   db.query(
+//     query,
+//     [
+//       uid,
+//       fullname,
+//       department,
+//       contact_number,
+//       emailid,
+//       current_sem,
+//       course_id,
+//       username,
+//     ],
+//     (err, result) => {
+//       if (err) {
+//         console.error("Error creating student:", err);
+//         res.status(500).json({ error: "Internal Server Error" });
+//       } else {
+//         res.status(200).json({ message: "Student created successfully" });
+//       }
+//     }
+//   );
+// };
+
+// //get student by course id and username
+// exports.getStudentByCourseId = (req, res) => {
+//   const { course_id, username } = req.params;
+//   // console.log(req.params);
+//   const query = "SELECT * FROM students WHERE course_id = ? AND username = ?";
+
+//   db.query(query, [course_id, username], (err, results) => {
+//     if (err) {
+//       console.error("Error fetching student:", err);
+//       res.status(500).json({ error: "Internal Server Error" });
+//     } else {
+//       res.json(results);
+//       // console.log(results);
+//     }
+//   });
+// };
+
+// exports.getStudentById = (req, res) => {
+//   const { id } = req.params;
+//   const query = "SELECT * FROM students WHERE id = ?";
+
+//   db.query(query, [id], (err, results) => {
+//     if (err) {
+//       console.error("Error fetching student:", err);
+//       res.status(500).json({ error: "Internal Server Error" });
+//     } else {
+//       res.json(results);
+//     }
+//   });
+// };
+
+// //delete student by id
+// exports.deleteStudent = (req, res) => {
+//   const { id } = req.params;
+//   const query = "DELETE FROM students WHERE id = ?";
+
+//   db.query(query, [id], (err, results) => {
+//     if (err) {
+//       console.error("Error deleting student:", err);
+//       res.status(500).json({ error: "Internal Server Error" });
+//     } else {
+//       res.json(results);
+//     }
+//   });
+// };
+
+exports.getAllStudents = async (req, res) => {
+  try {
+    const query = "SELECT * FROM students";
+    const [results] = await db.execute(query);
+    res.json(results);
+  } catch (error) {
+    console.error("Error fetching students:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
-exports.createStudent = (req, res) => {
-  const {
-    uid,
-    fullname,
-    department,
-    contact_number,
-    emailid,
-    current_sem,
-    course_id,
-    username,
-  } = req.body;
-  // console.log(req.body);
-  const query =
-    "INSERT INTO students (uid, fullname, department, contact_number, emailid, current_sem, course_id, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-  db.query(
-    query,
-    [
+exports.createStudent = async (req, res) => {
+  try {
+    const {
       uid,
       fullname,
       department,
@@ -46,62 +127,63 @@ exports.createStudent = (req, res) => {
       current_sem,
       course_id,
       username,
-    ],
-    (err, result) => {
-      if (err) {
-        console.error("Error creating student:", err);
-        res.status(500).json({ error: "Internal Server Error" });
-      } else {
-        res.status(200).json({ message: "Student created successfully" });
-      }
-    }
-  );
+    } = req.body;
+    
+    const query =
+      "INSERT INTO students (uid, fullname, department, contact_number, emailid, current_sem, course_id, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    await db.execute(query, [
+      uid,
+      fullname,
+      department,
+      contact_number,
+      emailid,
+      current_sem,
+      course_id,
+      username,
+    ]);
+
+    res.status(200).json({ message: "Student created successfully" });
+  } catch (error) {
+    console.error("Error creating student:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
-//get student by course id and username
-exports.getStudentByCourseId = (req, res) => {
-  const { course_id, username } = req.params;
-  // console.log(req.params);
-  const query = "SELECT * FROM students WHERE course_id = ? AND username = ?";
-
-  db.query(query, [course_id, username], (err, results) => {
-    if (err) {
-      console.error("Error fetching student:", err);
-      res.status(500).json({ error: "Internal Server Error" });
-    } else {
-      res.json(results);
-      // console.log(results);
-    }
-  });
+exports.getStudentByCourseId = async (req, res) => {
+  try {
+    const { course_id, username } = req.params;
+    const query = "SELECT * FROM students WHERE course_id = ? AND username = ?";
+    const [results] = await db.execute(query, [course_id, username]);
+    res.json(results);
+  } catch (error) {
+    console.error("Error fetching student:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
-exports.getStudentById = (req, res) => {
-  const { id } = req.params;
-  const query = "SELECT * FROM students WHERE id = ?";
-
-  db.query(query, [id], (err, results) => {
-    if (err) {
-      console.error("Error fetching student:", err);
-      res.status(500).json({ error: "Internal Server Error" });
-    } else {
-      res.json(results);
-    }
-  });
+exports.getStudentById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const query = "SELECT * FROM students WHERE id = ?";
+    const [results] = await db.execute(query, [id]);
+    res.json(results);
+  } catch (error) {
+    console.error("Error fetching student:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
-//delete student by id
-exports.deleteStudent = (req, res) => {
-  const { id } = req.params;
-  const query = "DELETE FROM students WHERE id = ?";
-
-  db.query(query, [id], (err, results) => {
-    if (err) {
-      console.error("Error deleting student:", err);
-      res.status(500).json({ error: "Internal Server Error" });
-    } else {
-      res.json(results);
-    }
-  });
+exports.deleteStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const query = "DELETE FROM students WHERE id = ?";
+    const [results] = await db.execute(query, [id]);
+    res.json(results);
+  } catch (error) {
+    console.error("Error deleting student:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 //add student to course excel template
@@ -156,11 +238,11 @@ const mysql = require("mysql2/promise");
 
 // Database configuration
 const dbConfig = {
-  host: "localhost",
-  port: 3308, // Your MySQL port
-  user: "root",
-  password: "", // Your MySQL password
-  database: "attendence_system",
+  host: process.env.HOST,
+  port: process.env.DB_PORT,
+  user: process.env.USER,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE,
 };
 
 exports.ImportStudentExcel = async (req, res) => {
