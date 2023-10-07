@@ -120,15 +120,17 @@ exports.loginFaculty = async (req, res) => {
 // Get faculty by ID
 exports.getFacultyById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const query = 'SELECT * FROM faculty WHERE fid = ?';
-    const [faculty] = await db.execute(query, [id]);
+    const { username , password } = req.params;
+    // console.log(id);
+    const query = 'SELECT * FROM faculty WHERE username = ? AND password = ?';
+    const [faculty] = await db.execute(query, [username, password]);
 
     if (!faculty.length) {
       return res.status(404).json({ error: 'Faculty not found' });
     }
 
     res.json(faculty[0]);
+    // console.log(faculty[0]);
   } catch (error) {
     console.error('Error fetching faculty:', error);
     res.status(500).json({ error: 'Internal Server Error' });

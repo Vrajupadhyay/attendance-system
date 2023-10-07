@@ -126,12 +126,14 @@ exports.createStudent = async (req, res) => {
       emailid,
       current_sem,
       course_id,
+      batch,
+      classType,
       username,
     } = req.body;
-    
+
     const query =
-      "INSERT INTO students (uid, fullname, department, contact_number, emailid, current_sem, course_id, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    
+      "INSERT INTO students (uid, fullname, department, contact_number, emailid, current_sem, course_id, classType, batch, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
     await db.execute(query, [
       uid,
       fullname,
@@ -140,6 +142,8 @@ exports.createStudent = async (req, res) => {
       emailid,
       current_sem,
       course_id,
+      classType,
+      batch,
       username,
     ]);
 
@@ -152,9 +156,10 @@ exports.createStudent = async (req, res) => {
 
 exports.getStudentByCourseId = async (req, res) => {
   try {
-    const { course_id, username } = req.params;
-    const query = "SELECT * FROM students WHERE course_id = ? AND username = ?";
-    const [results] = await db.execute(query, [course_id, username]);
+    const { course_id, batch, username } = req.params;
+    const query =
+      "SELECT * FROM students WHERE course_id = ? AND batch = ? AND username = ?";
+    const [results] = await db.execute(query, [course_id, batch, username]);
     res.json(results);
   } catch (error) {
     console.error("Error fetching student:", error);
@@ -177,9 +182,22 @@ exports.getStudentById = async (req, res) => {
 exports.deleteStudent = async (req, res) => {
   try {
     const { id } = req.params;
-    const query = "DELETE FROM students WHERE id = ?";
-    const [results] = await db.execute(query, [id]);
-    res.json(results);
+
+    // Step 1: Identify related attendance records
+    const attendanceQuery = "SELECT * FROM attendance WHERE student_id = ?";
+    const [attendanceResults] = await db.execute(attendanceQuery, [id]);
+
+    // Step 2: Delete related attendance records
+    const deleteAttendanceQuery = "DELETE FROM attendance WHERE student_id = ?";
+    await db.execute(deleteAttendanceQuery, [id]);
+
+    // Step 3: Delete the student record
+    const deleteStudentQuery = "DELETE FROM students WHERE id = ?";
+    await db.execute(deleteStudentQuery, [id]);
+
+    res.json({
+      message: "Student and related attendance records deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting student:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -306,41 +324,91 @@ exports.deleteStudent = async (req, res) => {
 //     res.status(500).send("Internal Server Error");
 //   }
 // };
+
+//final code for import student excel but work in only local host
+// exports.ImportStudentExcel = async (req, res) => {
+//   try {
+//     // Extract the 'courseId' and 'username' from the request body
+//     const { courseId, username, filepath } = req.body;
+//     // console.log(req.body);
+//     console.log(courseId,username,filepath);
+//     if (!courseId || !username) {
+//       return res.status(400).send("Invalid request data."); // Handle missing data
+//     }
+
+//     // Load the Excel file
+//     const workbook = new ExcelJS.Workbook();
+//     await workbook.xlsx.readFile(filepath); // Replace with the actual file path
+
+//     // Assuming the data is in the first worksheet
+//     const worksheet = workbook.getWorksheet(1);
+
+//     // Create a database connection
+//     const connection = await db.getConnection();
+
+//     // Iterate through rows and insert data into the database
+//     for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+//       const row = worksheet.getRow(rowNumber);
+//       const uid = row.getCell(1).value?.toString() ?? "";
+//       const fullname = row.getCell(2).value?.toString() ?? "";
+//       const department = row.getCell(3).value?.toString() ?? "";
+//       // const contactNumber = row.getCell(4).value?.toString() ?? "";
+//       // const emailCell = row.getCell(5);
+//       // const emailid = emailCell.text || '';
+//       const currentSem = row.getCell(4).value?.toString() ?? "";
+
+//       // Insert the student data into the database (replace 'students' with your actual table name)
+//       const query = `
+//         INSERT INTO students (uid, fullname, department, current_sem, course_id, username)
+//         VALUES (?, ?, ?, ?, ?, ?)
+//       `;
+
+//       await connection.execute(query, [
+//         uid,
+//         fullname,
+//         department,
+//         currentSem,
+//         courseId,
+//         username,
+//       ]);
+//     }
+
+//     // Release the database connection
+//     connection.release();
+
+//     res.status(200).send("Students uploaded from Excel file successfully.");
+//   } catch (error) {
+//     console.error("Error uploading students from Excel:", error);
+//     res.status(500).send("Internal Server Error");
+//   }
+// };
 exports.ImportStudentExcel = async (req, res) => {
   try {
-    // Extract the 'courseId' and 'username' from the request body
-    const { courseId, username, filepath } = req.body;
+    const { courseId, username, classType, batch, students } = req.body;
     // console.log(req.body);
 
-    if (!courseId || !username) {
-      return res.status(400).send("Invalid request data."); // Handle missing data
+    // Check if required data is missing
+    if (!courseId || !username || !students || !Array.isArray(students)) {
+      return res.status(400).send("Invalid request data.");
     }
 
-    // Load the Excel file
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.readFile(filepath); // Replace with the actual file path
-
-    // Assuming the data is in the first worksheet
-    const worksheet = workbook.getWorksheet(1);
-
-    // Create a database connection
+    // Create a database connection (assuming you have a reusable connection pool)
     const connection = await db.getConnection();
 
-    // Iterate through rows and insert data into the database
-    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
-      const row = worksheet.getRow(rowNumber);
-      const uid = row.getCell(1).value?.toString() ?? "";
-      const fullname = row.getCell(2).value?.toString() ?? "";
-      const department = row.getCell(3).value?.toString() ?? "";
-      // const contactNumber = row.getCell(4).value?.toString() ?? "";
-      // const emailCell = row.getCell(5);
-      // const emailid = emailCell.text || '';
-      const currentSem = row.getCell(4).value?.toString() ?? "";
+    // Iterate through the received student data and insert into the database
+    for (const studentData of students) {
+      const { uid, fullname, department, currentSem } = studentData;
+
+      // Check if any of the required data is missing
+      if (!uid || !fullname || !department || !currentSem) {
+        console.error("Missing required data for a student:", studentData);
+        continue; // Skip this student and log an error
+      }
 
       // Insert the student data into the database (replace 'students' with your actual table name)
       const query = `
-        INSERT INTO students (uid, fullname, department, current_sem, course_id, username)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO students (uid, fullname, department, current_sem, classType, batch, course_id, username)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       await connection.execute(query, [
@@ -348,6 +416,8 @@ exports.ImportStudentExcel = async (req, res) => {
         fullname,
         department,
         currentSem,
+        classType,
+        batch,
         courseId,
         username,
       ]);
@@ -356,9 +426,9 @@ exports.ImportStudentExcel = async (req, res) => {
     // Release the database connection
     connection.release();
 
-    res.status(200).send("Students uploaded from Excel file successfully.");
+    res.status(200).send("Students uploaded successfully.");
   } catch (error) {
-    console.error("Error uploading students from Excel:", error);
+    console.error("Error uploading students:", error);
     res.status(500).send("Internal Server Error");
   }
 };

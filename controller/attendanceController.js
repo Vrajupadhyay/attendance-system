@@ -1032,6 +1032,7 @@ exports.getStudentAttendance = async (req, res) => {
 };
 exports.updateStudentAttendance = async (req, res) => {
   const { username, course_id, currentDate, studentUID } = req.params;
+  // console.log(req.params);
 
   try {
     // Define the SQL query
@@ -1046,8 +1047,8 @@ exports.updateStudentAttendance = async (req, res) => {
 
     // Execute the SQL query using the pool
     const [results] = await db.execute(query, [
-      username,
       course_id,
+      username,
       currentDate,
       studentUID,
     ]);

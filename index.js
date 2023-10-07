@@ -27,7 +27,7 @@ const extraAttendanceController = require('./controller/extraAttendanceControlle
 
 // Define routes using controllers
 app.get('/students', studentsController.getAllStudents);//get all students
-app.get('/students/:course_id/:username', studentsController.getStudentByCourseId);//get students by course id and username
+app.get('/students/:course_id/:batch/:username', studentsController.getStudentByCourseId);//get students by course id and username
 app.delete('/students/delete/:id', studentsController.deleteStudent);//delete student by id
 app.post('/students', studentsController.createStudent);
 app.get('/students/:id', studentsController.getStudentById);
