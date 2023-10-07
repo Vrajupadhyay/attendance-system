@@ -1267,7 +1267,7 @@ exports.getAttendanceByPercentageFilter = async (req, res) => {
       "SELECT course_name, start_date, end_date, course_id, sem  FROM courses WHERE id = ?";
 
     // Execute the course details query using the pool
-    const courseResult = await executeQuery(courseQuery, [course_id]);
+    const courseResult = await db.execute(courseQuery, [course_id]);
 
     if (courseResult.length === 0) {
       return res.status(404).json({ error: "Course not found" });
@@ -1289,7 +1289,7 @@ exports.getAttendanceByPercentageFilter = async (req, res) => {
         attendance.course_id = ? AND attendance.username = ?`;
 
     // Execute the student attendance data query using the pool
-    const attendanceResult = await executeQuery(attendanceQuery, [
+    const attendanceResult = await db.execute(attendanceQuery, [
       course_id,
       username,
     ]);
@@ -1318,7 +1318,7 @@ exports.getAttendanceByPercentageFilter = async (req, res) => {
         percentage_attendance < ?;`;
 
     // Execute the student statistics query using the pool
-    const attendanceResult2 = await executeQuery(attendanceQuery2, [
+    const attendanceResult2 = await db.execute(attendanceQuery2, [
       course_id,
       username,
       percentage,
