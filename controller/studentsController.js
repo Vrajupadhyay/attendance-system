@@ -132,7 +132,7 @@ exports.createStudent = async (req, res) => {
     } = req.body;
 
     const query =
-      "INSERT INTO students (uid, fullname, department, contact_number, emailid, current_sem, course_id, classType, batch, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+      "INSERT INTO students (uid, fullname, department, contact_number, emailid, current_sem, course_id, classType, batch, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     await db.execute(query, [
       uid,
