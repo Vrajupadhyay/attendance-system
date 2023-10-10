@@ -1541,7 +1541,7 @@ exports.deleteAttendanceByDate = async (req, res) => {
       "DELETE FROM attendance WHERE course_id = ? AND username = ? AND date = ?";
 
     // Execute the delete query using the pool
-    const results = await executeQuery(query, [course_id, username, date]);
+    const results = await db.execute(query, [course_id, username, date]);
 
     // Send a JSON response
     res.json(results);
