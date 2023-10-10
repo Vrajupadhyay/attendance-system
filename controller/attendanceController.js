@@ -147,7 +147,6 @@ const XLSX = require("xlsx");
 //   }
 // };
 
-
 exports.markAttendance = async (req, res) => {
   try {
     const { id, username, date, time, attendanceData } = req.body;
@@ -211,7 +210,6 @@ exports.markAttendance = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 //get attendance by course id and date and username
 // exports.getAttendance = (req, res) => {
