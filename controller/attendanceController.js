@@ -30,122 +30,61 @@ const XLSX = require("xlsx");
 // };
 
 //attendance mark but duplicate attendace not mark in database
-// exports.markAttendance = (req, res) => {
-//   const { id, username, date, time, attendanceData } = req.body;
+exports.markAttendance = (req, res) => {
+  const { id, username, date, time, attendanceData } = req.body;
 
-//   // Create an array to store duplicate entries
-//   const duplicateEntries = [];
+  // Create an array to store duplicate entries
+  const duplicateEntries = [];
 
-//   // Define the SQL query to check for existing attendance records
-//   const checkDuplicateQuery = `
-//     SELECT *
-//     FROM attendance
-//     WHERE course_id = ? AND student_id = ? AND date = ? AND time = ?
-//   `;
+  // Define the SQL query to check for existing attendance records
+  const checkDuplicateQuery = `
+    SELECT *
+    FROM attendance
+    WHERE course_id = ? AND student_id = ? AND date = ? AND time = ?
+  `;
 
-//   // Define the SQL query to insert attendance data
-//   const insertAttendanceQuery = `
-//     INSERT INTO attendance (course_id, student_id, username, date, time, status)
-//     VALUES (?, ?, ?, ?, ?, ?)
-//   `;
+  // Define the SQL query to insert attendance data
+  const insertAttendanceQuery = `
+    INSERT INTO attendance (course_id, student_id, username, date, time, status)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
 
-//   // Loop through attendanceData and check/insert each record into the database
-//   attendanceData.forEach((record) => {
-//     const { student_id, status } = record;
-//     const values = [id, student_id, username, date, time, status];
+  // Loop through attendanceData and check/insert each record into the database
+  attendanceData.forEach((record) => {
+    const { student_id, status } = record;
+    const values = [id, student_id, username, date, time, status];
 
-//     // Check for duplicate record
-//     db.query(checkDuplicateQuery, [id, student_id, date, time], (err, results) => {
-//       if (err) {
-//         console.error("Error checking duplicate attendance:", err);
-//         return res.status(500).json({ error: "Internal Server Error" });
-//       }
+    // Check for duplicate record
+    db.query(checkDuplicateQuery, [id, student_id, date, time], (err, results) => {
+      if (err) {
+        console.error("Error checking duplicate attendance:", err);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
 
-//       if (results.length > 0) {
-//         // Duplicate entry found, add to the list of duplicates
-//         duplicateEntries.push(`Attendance for student ${student_id} already marked for ${date} ${time}`);
-//       } else {
-//         // No duplicate found, insert the new record
-//         db.query(insertAttendanceQuery, values, (err, result) => {
-//           if (err) {
-//             console.error("Error inserting attendance data:", err);
-//             return res.status(500).json({ error: "Internal Server Error" });
-//           }
-//         });
-//       }
-//     });
-//   });
+      if (results.length > 0) {
+        // Duplicate entry found, add to the list of duplicates
+        duplicateEntries.push(`Attendance for student ${student_id} already marked for ${date} ${time}`);
+      } else {
+        // No duplicate found, insert the new record
+        db.query(insertAttendanceQuery, values, (err, result) => {
+          if (err) {
+            console.error("Error inserting attendance data:", err);
+            return res.status(500).json({ error: "Internal Server Error" });
+          }
+        });
+      }
+    });
+  });
 
-//   // Check if any duplicates were found
-//   if (duplicateEntries.length > 0) {
-//     // Send a response indicating duplicate entries with a status of 409 (Conflict)
-//     return res.status(409).json({ message: "Duplicate attendance entries", duplicates: duplicateEntries });
-//   } else {
-//     // Send a response indicating successful attendance marking with a status of 201 (Created)
-//     return res.status(201).json({ message: "Attendance marked successfully" });
-//   }
-// };
-
-// exports.markAttendance = async (req, res) => {
-//   try {
-//     const { id, username, date, time, attendanceData } = req.body;
-
-//     // Create an array to store duplicate entries
-//     const duplicateEntries = [];
-
-//     // Define the SQL query to check for existing attendance records
-//     const checkDuplicateQuery = `
-//       SELECT *
-//       FROM attendance
-//       WHERE course_id = ? AND student_id = ? AND date = ? AND time = ?
-//     `;
-
-//     // Define the SQL query to insert attendance data
-//     const insertAttendanceQuery = `
-//       INSERT INTO attendance (course_id, student_id, username, date, time, status)
-//       VALUES (?, ?, ?, ?, ?, ?)
-//     `;
-
-//     // Loop through attendanceData and check/insert each record into the database
-//     for (const record of attendanceData) {
-//       const { student_id, status } = record;
-//       const values = [id, student_id, username, date, time, status];
-
-//       // Check for duplicate record
-//       const [results] = await db.execute(checkDuplicateQuery, [
-//         id,
-//         student_id,
-//         date,
-//         time,
-//       ]);
-
-//       if (results.length > 0) {
-//         // Duplicate entry found, add to the list of duplicates
-//         duplicateEntries.push(
-//           `Attendance for student ${student_id} already marked for ${date} ${time}`
-//         );
-//       } else {
-//         // No duplicate found, insert the new record
-//         await db.execute(insertAttendanceQuery, values);
-//       }
-//     }
-
-//     // Check if any duplicates were found
-//     if (duplicateEntries.length > 0) {
-//       // Send a response indicating duplicate entries with a status of 409 (Conflict)
-//       res.status(409).json({
-//         message: "Duplicate attendance entries",
-//         duplicates: duplicateEntries,
-//       });
-//     } else {
-//       // Send a response indicating successful attendance marking with a status of 201 (Created)
-//       res.status(201).json({ message: "Attendance marked successfully" });
-//     }
-//   } catch (error) {
-//     console.error("Error marking attendance:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
+  // Check if any duplicates were found
+  if (duplicateEntries.length > 0) {
+    // Send a response indicating duplicate entries with a status of 409 (Conflict)
+    return res.status(409).json({ message: "Duplicate attendance entries", duplicates: duplicateEntries });
+  } else {
+    // Send a response indicating successful attendance marking with a status of 201 (Created)
+    return res.status(201).json({ message: "Attendance marked successfully" });
+  }
+};
 
 exports.markAttendance = async (req, res) => {
   try {
@@ -167,8 +106,8 @@ exports.markAttendance = async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?)
     `;
 
-    // Use Promise.all to parallelize database queries
-    const promises = attendanceData.map(async (record) => {
+    // Loop through attendanceData and check/insert each record into the database
+    for (const record of attendanceData) {
       const { student_id, status } = record;
       const values = [id, student_id, username, date, time, status];
 
@@ -189,10 +128,7 @@ exports.markAttendance = async (req, res) => {
         // No duplicate found, insert the new record
         await db.execute(insertAttendanceQuery, values);
       }
-    });
-
-    // Wait for all promises to complete
-    await Promise.all(promises);
+    }
 
     // Check if any duplicates were found
     if (duplicateEntries.length > 0) {
@@ -210,6 +146,7 @@ exports.markAttendance = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 //get attendance by course id and date and username
 // exports.getAttendance = (req, res) => {
