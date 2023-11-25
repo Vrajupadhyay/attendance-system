@@ -765,7 +765,7 @@ exports.generateAttendanceReport = async (req, res) => {
       service: "gmail",
       auth: {
         user: "22it402@bvmengineering.ac.in", // replace with your Gmail email
-        pass: "22it4021207", // replace with your Gmail password
+        pass: "byfs mynr mmgn wbie", // replace with your Gmail password
       },
     });
 
@@ -801,6 +801,16 @@ exports.generateMonthlyAttendanceReport = async (req, res) => {
   try {
     const { course_id, username, selectedMonth } = req.params;
     // console.log(req.params);
+    // Fetch faculty email based on the username
+    const facultyQuery = "SELECT email FROM faculty WHERE username = ?";
+    const [facultyResult] = await db.execute(facultyQuery, [username]);
+
+    if (facultyResult.length === 0) {
+      return res.status(404).json({ error: "Faculty not found" });
+    }
+
+    const facultyEmail = facultyResult[0].email;
+
     // Fetch course details
     const courseQuery =
       "SELECT course_name, start_date, end_date, course_id, sem FROM courses WHERE id = ?";
@@ -963,11 +973,43 @@ exports.generateMonthlyAttendanceReport = async (req, res) => {
       type: "buffer",
     });
     res.send(excelBuffer);
+    // Send the Excel file as an email attachment
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "22it402@bvmengineering.ac.in", // replace with your Gmail email
+        pass: "byfs mynr mmgn wbie", // replace with your Gmail password
+      },
+    });
+
+    const mailOptions = {
+      from: "22it402@bvmengineering.ac.in",
+      to: facultyEmail, // replace with the recipient's email
+      subject: "Attendance Report",
+      text: "Please find the attached attendance report.",
+      attachments: [
+        {
+          filename: fileName,
+          content: excelBuffer,
+        },
+      ],
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        res.status(500).json({ error: "Error sending email" });
+      } else {
+        console.log("Email sent:", info.response);
+        res.status(200).json({ message: "Email sent successfully" });
+      }
+    });
   } catch (error) {
     console.error("Error generating attendance report:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 // percentage of attendance by date
 // exports.getAttendancePercentage = (req, res) => {
 //   const { course_id, username, date } = req.params;
